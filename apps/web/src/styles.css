@@ -38,7 +38,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 }
 .brand { display: flex; align-items: center; gap: 11px; margin: 0 6px 21px; color: #fff; text-decoration: none; }
 .brand-button { width: calc(100% - 12px); padding: 0; border: 0; background: transparent; text-align: right; }
-.brand-mark { display: grid; width: 37px; height: 37px; flex: 0 0 auto; place-items: center; color: #fff; background: var(--brand-dark); border: 1px solid #ffffff30; border-radius: 11px; font-size: 19px; font-weight: 700; }
+.brand-mark { display: block; width: 37px; height: 37px; flex: 0 0 auto; object-fit: contain; border-radius: 11px; }
 .brand strong, .brand small, .workspace-copy strong, .workspace-copy small, .profile-copy strong, .profile-copy small { display: block; }
 .brand strong { font-size: 14px; font-weight: 650; }
 .portal-brand-logo { width: 38px; height: 38px; flex: none; border-radius: 10px; object-fit: contain; }

@@ -495,7 +495,7 @@ function OwnerPortalAccess({ session }: { session: UserSession }) {
 
   return <main className="full-screen-state owner-access-page">
     <section className="owner-access-card" aria-labelledby="owner-access-title">
-      <span className="brand-mark">م</span>
+      <img className="brand-mark" src="/central-business-hub-logo.svg" alt="" />
       <p className="eyebrow">مساحة خاصة</p>
       <h1 id="owner-access-title">إدارة مالك المنصة</h1>
       <p>{ownerMembership
@@ -763,7 +763,7 @@ function MarketplacePortal({ kind }: { kind: "supply" | "services" }) {
 
   return <div className="portal-page market-page" dir="rtl">
     <header className="portal-header">
-      <a className="portal-brand" href="/"><span className="brand-mark">م</span><span><strong>مركز الأعمال</strong><small>{isSupply ? "سوق التوريد" : "دليل خدمات الأعمال"}</small></span></a>
+      <a className="portal-brand" href="/"><img className="portal-brand-logo" src="/central-business-hub-logo.svg" alt="" /><span><strong>مركز الأعمال</strong><small>{isSupply ? "سوق التوريد" : "دليل خدمات الأعمال"}</small></span></a>
       <nav className="portal-navigation" aria-label="التنقل بين المنصات"><a href="/companies">الشركات</a><a className={isSupply ? "active" : ""} href="/supply">التوريد</a><a className={!isSupply ? "active" : ""} href="/services">الخدمات</a></nav>
       <div className="market-header-actions">
         {isSupply && <button className="secondary-button market-basket-button" onClick={() => setBasketOpen((open) => !open)}>قائمة الطلب <span className="basket-count">{basket.length}</span></button>}
@@ -820,7 +820,7 @@ function MarketplacePortal({ kind }: { kind: "supply" | "services" }) {
       </section>
       <section className="market-crosslink"><div><span className="portal-eyebrow">كل البوابات متصلة</span><h2>{isSupply ? "هل تبحث عن خدمة متخصصة؟" : "هل تحتاج إلى منتجات للتوريد؟"}</h2><p>استخدم الدليل المنفصل المناسب واحتفظ بمتابعة الطلبات داخل مساحة شركتك.</p></div><a className="secondary-button" href={isSupply ? "/services" : "/supply"}>{isSupply ? "الانتقال إلى دليل الخدمات" : "الانتقال إلى سوق التوريد"} <span aria-hidden="true">←</span></a></section>
     </main>
-    <footer className="portal-footer"><a className="portal-brand" href="/"><span className="brand-mark">م</span><span><strong>مركز الأعمال</strong><small>مسارات أعمال مترابطة</small></span></a><nav aria-label="روابط المنصات"><a href="/companies">بوابة الشركات</a><a href="/supply">سوق التوريد</a><a href="/services">دليل الخدمات</a></nav><span>الأسعار تخضع لعروض الموردين ومقدمي الخدمات</span></footer>
+    <footer className="portal-footer"><a className="portal-brand" href="/"><img className="portal-brand-logo" src="/central-business-hub-logo.svg" alt="" /><span><strong>مركز الأعمال</strong><small>مسارات أعمال مترابطة</small></span></a><nav aria-label="روابط المنصات"><a href="/companies">بوابة الشركات</a><a href="/supply">سوق التوريد</a><a href="/services">دليل الخدمات</a></nav><span>الأسعار تخضع لعروض الموردين ومقدمي الخدمات</span></footer>
     {isSupply && basketOpen && <div className="portal-modal-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) setBasketOpen(false); }}>
       <section className="portal-modal" role="dialog" aria-modal="true" aria-labelledby="basket-title">
         <button className="portal-modal-close" onClick={() => setBasketOpen(false)} aria-label="إغلاق">×</button><span className="portal-eyebrow">طلب واحد، موردون محددون</span><h2 id="basket-title">قائمة طلب عروض الأسعار</h2>
@@ -1021,7 +1021,7 @@ function Workspace({ session, onSessionChange }: { session: UserSession; onSessi
         aria-label={mobileNavOpen ? "إغلاق قائمة التنقل" : "فتح قائمة التنقل"} aria-expanded={mobileNavOpen} aria-controls="workspace-navigation">☰</button>
       <aside className="sidebar">
         <button className="brand brand-button" aria-label="العودة إلى لوحة المتابعة" onClick={() => { setActiveSection("overview"); setMobileNavOpen(false); }}>
-          <span className="brand-mark">م</span><span><strong>مركز الأعمال</strong><small>Central Business Hub</small></span>
+          <img className="brand-mark" src="/central-business-hub-logo.svg" alt="" /><span><strong>مركز الأعمال</strong><small>Central Business Hub</small></span>
         </button>
         <div className="company-switcher">
           <button className="workspace-switcher" type="button" disabled={session.memberships.length < 2 || switchingCompany}
