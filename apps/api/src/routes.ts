@@ -8,6 +8,7 @@ import managedInventoryRoutes from "./managed-inventory-routes.js";
 import operationsRoutes from "./operations-routes.js";
 import procurementRoutes from "./procurement-routes.js";
 import riskRoutes from "./risk-routes.js";
+import supportRoutes from "./support-routes.js";
 
 const routes = Router();
 
@@ -20,6 +21,7 @@ routes.use(commercialRoutes);
 routes.use(managedInventoryRoutes);
 routes.use(riskRoutes);
 routes.use(analyticsRoutes);
+routes.use(supportRoutes);
 
 routes.use((_request, response) => {
   response.status(404).json({ error: "المسار المطلوب غير موجود.", code: "ROUTE_NOT_FOUND" });

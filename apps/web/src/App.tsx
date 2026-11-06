@@ -514,6 +514,10 @@ function OwnerPortalAccess({ session }: { session: UserSession }) {
 
 function MarketingLanding() {
   useEffect(() => { document.title = "مركز الأعمال | بوابات أعمال B2B"; }, []);
+  const [chatOpen, setChatOpen] = useState(false);
+  const [chatSent, setChatSent] = useState(false);
+  const [chatBusy, setChatBusy] = useState(false);
+  const [chatError, setChatError] = useState("");
   const platforms = [
     { number: "01", title: "بوابة الشركات", description: "مساحة خاصة للمشتريات والفروع والطلبات والعقود والمخزون والفواتير.", href: "/companies", action: "دخول مساحة الشركات", icon: "ش" },
     { number: "02", title: "سوق المصانع والموردين", description: "كتالوج توريد عام للمنتجات المعتمدة، مع حد الطلب ومورد كل منتج.", href: "/supply", action: "تصفح سوق التوريد", icon: "ت" },
@@ -528,9 +532,9 @@ function MarketingLanding() {
 
   return <div className="portal-page landing-page" dir="rtl">
     <header className="portal-header">
-      <a className="portal-brand" href="/"><span className="brand-mark">م</span><span><strong>مركز الأعمال</strong><small>منظومة أعمال مترابطة</small></span></a>
+      <a className="portal-brand" href="/"><img className="portal-brand-logo" src="/central-business-hub-logo.svg" alt="" /><span><strong>مركز الأعمال</strong><small>منظومة أعمال مترابطة</small></span></a>
       <nav className="portal-navigation" aria-label="التنقل بين المنصات">
-        <a href="/companies">الشركات</a><a href="/supply">التوريد</a><a href="/services">الخدمات</a>
+        <a href="/companies">الشركات</a><a href="/supply">التوريد</a><a href="/services">الخدمات</a><a href="#about">من نحن</a>
       </nav>
       <a className="primary-button" href="/companies">دخول الشركات <span aria-hidden="true">←</span></a>
     </header>
@@ -545,7 +549,7 @@ function MarketingLanding() {
         </div>
         <div className="landing-visual" aria-label="مسارات مترابطة بين الشركات والموردين والخدمات">
           <div className="visual-orbit orbit-one" /><div className="visual-orbit orbit-two" />
-          <div className="visual-core"><span>م</span><strong>مركز الأعمال</strong><small>مسارات تجارية متصلة</small></div>
+          <div className="visual-core"><img src="/central-business-hub-logo.svg" alt="" /><strong>مركز الأعمال</strong><small>مسارات تجارية متصلة</small></div>
           <div className="visual-node node-company"><span>ش</span><small>الشركات</small></div>
           <div className="visual-node node-supply"><span>ت</span><small>التوريد</small></div>
           <div className="visual-node node-service"><span>خ</span><small>الخدمات</small></div>
@@ -573,9 +577,40 @@ function MarketingLanding() {
         <div><span className="portal-eyebrow">من الطلب حتى الإغلاق</span><h2>العملية كاملة، لا مجرد عرض منتجات</h2><p>يبدأ العميل بطلب موحد، ثم تصل طلبات التوريد إلى الموردين المحددين، وتُدار العروض والشراء والشحن والتسليم من مساحة الشركة.</p></div>
         <ol className="workflow-steps"><li><span>01</span><strong>استكشاف</strong><small>كتالوج أو خدمة</small></li><li><span>02</span><strong>طلب وعرض</strong><small>مورد أو مقدم خدمة</small></li><li><span>03</span><strong>تنفيذ ونقل</strong><small>أمر وشحنة</small></li><li><span>04</span><strong>استلام وإغلاق</strong><small>متابعة داخل مساحة الشركة</small></li></ol>
       </section>
+      <section className="landing-about" id="about">
+        <div className="landing-about-visual">
+          <div className="about-orbit orbit-a" /><div className="about-orbit orbit-b" />
+          <img src="/central-business-hub-logo.svg" alt="شعار مركز الأعمال" />
+          <span className="about-pulse pulse-a">طلبات</span><span className="about-pulse pulse-b">توريد</span><span className="about-pulse pulse-c">تسليم</span>
+        </div>
+        <div className="landing-about-copy"><span className="portal-eyebrow">من نحن</span><h2>نبني جسرًا واحدًا لكل أعمال الشركة</h2><p>مركز الأعمال منصة سعودية عربية تربط قطاعات الشراء والموردين والخدمات والنقل والمخزون في تجربة تشغيلية موحدة، مع صلاحيات واضحة ومسارات متابعة موثقة.</p><div className="about-values"><div><strong>شفافية</strong><span>كل طلب وحركة ظاهرة بصلاحياتها</span></div><div><strong>تكامل</strong><span>منصة واحدة عبر بوابات منفصلة</span></div><div><strong>نمو</strong><span>شبكة شركاء تتوسع مع أعمالك</span></div></div></div>
+      </section>
       <section className="landing-bottom-cta"><div><span className="portal-eyebrow">ابدأ في المساحة المناسبة</span><h2>أنت تحدد دور شركتك؛ والمنصة ترتب سير العمل.</h2></div><div className="landing-actions"><a className="primary-button" href="/companies?type=customer">تسجيل شركة مشترية</a><a className="secondary-button" href="/companies?type=supplier">تسجيل مورد أو مصنع</a></div></section>
     </main>
-    <footer className="portal-footer"><a className="portal-brand" href="/"><span className="brand-mark">م</span><span><strong>مركز الأعمال</strong><small>Central Business Hub</small></span></a><nav aria-label="روابط المنصات"><a href="/companies">بوابة الشركات</a><a href="/supply">سوق التوريد</a><a href="/services">دليل الخدمات</a></nav><span>منظومة B2B متعددة البوابات</span></footer>
+    <footer className="portal-footer"><a className="portal-brand" href="/"><img className="portal-brand-logo" src="/central-business-hub-logo.svg" alt="" /><span><strong>مركز الأعمال</strong><small>Central Business Hub</small></span></a><nav aria-label="روابط المنصات"><a href="/companies">بوابة الشركات</a><a href="/supply">سوق التوريد</a><a href="/services">دليل الخدمات</a><a href="#about">من نحن</a></nav><span>منظومة B2B متعددة البوابات</span></footer>
+    <button className={`support-launcher${chatOpen ? " open" : ""}`} type="button" aria-label="فتح المحادثة" onClick={() => setChatOpen((open) => !open)}>؟<span>محادثة</span></button>
+    {chatOpen ? <section className="support-chat" aria-label="محادثة الدعم">
+      <header><div><strong>مساعد مركز الأعمال</strong><span><i /> متصل الآن</span></div><button type="button" aria-label="إغلاق المحادثة" onClick={() => setChatOpen(false)}>×</button></header>
+      {chatSent ? <div className="support-success"><span>✓</span><strong>تم إرسال طلبك</strong><p>سيتواصل معك فريق المنصة على بيانات التواصل التي أدخلتها.</p><button className="primary-button" type="button" onClick={() => { setChatSent(false); setChatError(""); }}>رسالة جديدة</button></div> :
+        <form onSubmit={async (event) => {
+          event.preventDefault();
+          setChatBusy(true); setChatError("");
+          const form = new FormData(event.currentTarget);
+          try {
+            await apiRequest<{ message: string }>("/support/conversations", { method: "POST", body: { visitorName: form.get("name"), contact: form.get("contact"), topic: form.get("topic"), message: form.get("message") } });
+            setChatSent(true);
+          } catch (cause) { setChatError(cause instanceof Error ? cause.message : "تعذر إرسال المحادثة."); }
+          finally { setChatBusy(false); }
+        }}>
+          <p>أخبرنا بما تحتاج إليه وسنوجهك للشريك أو المسار المناسب.</p>
+          <label>الاسم<input name="name" required minLength={2} maxLength={120} /></label>
+          <label>البريد أو رقم التواصل<input name="contact" maxLength={254} /></label>
+          <label>نوع الطلب<select name="topic"><option>استفسار عام</option><option>التسجيل والشركة</option><option>التوريد والمصانع</option><option>الخدمات والنقل</option><option>إدارة المخزون</option></select></label>
+          <label>الرسالة<textarea name="message" required minLength={3} maxLength={2000} /></label>
+          {chatError ? <div className="support-error" role="alert">{chatError}</div> : null}
+          <button className="primary-button" type="submit" disabled={chatBusy}>{chatBusy ? "جارٍ الإرسال..." : "إرسال المحادثة"}</button>
+        </form>}
+    </section> : null}
   </div>;
 }
 
