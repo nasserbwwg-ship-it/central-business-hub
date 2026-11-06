@@ -520,7 +520,7 @@ function MarketingLanding() {
     { number: "04", title: "بوابة اللوجستيات", description: "مساحة تشغيل لشركات النقل ضمن حساب الشريك لإدارة الشحنات والتسليم.", href: "/companies?type=logistics_provider", action: "تسجيل شركة نقل", icon: "ل" },
     { number: "05", title: "المخزون والباركود", description: "أدوات تشغيلية اختيارية للمستودعات والحركات والجرد ضمن مساحة الشركة.", href: "/companies", action: "إدارة المخزون", icon: "م" },
     { number: "06", title: "العقود والصفقات", description: "طلبات عروض الأسعار والعروض وأوامر الشراء والعقود والمطالبات.", href: "/companies", action: "إدارة الصفقات", icon: "ع" },
-    { number: "07", title: "الإدارة والتحليلات", description: "لوحة المشغل لمراجعة الشركات والعمليات ومؤشرات الأعمال.", href: "/companies", action: "بوابة المشغل", icon: "إ" },
+    { number: "07", title: "لوحة مالك المنصة", description: "مساحة خاصة للمشغل لاعتماد الشركات ومراجعة العمليات وتسعير الخدمات.", href: "/owner", action: "دخول المالك الخاص", icon: "إ" },
     { number: "08", title: "التشغيل الميداني", description: "واجهات متجاوبة لأعمال المستودع والنقل ومتابعة الطلبات.", href: "/companies", action: "استكشف مساحة العمل", icon: "↗" },
     { number: "09", title: "إدارة المخزون والتوريد", description: "اطلب متابعة مخزون مستودعك، وحدد الموردين وسقوف إعادة التوريد الآلية.", href: "/companies?section=finance", action: "اطلب الخدمة التشغيلية", icon: "↻" },
   ];
