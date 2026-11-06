@@ -597,3 +597,11 @@ td { height: 45px; color: #697586; font-size: 8px; }
   .market-header-actions .secondary-button { font-size: 0; }
   .market-header-actions .secondary-button .basket-count { font-size: 9px; }
 }
+@media (max-width: 360px) {
+  .portal-header { min-height: 0; flex-wrap: wrap; gap: 7px; padding: 8px 10px; }
+  .portal-brand { min-width: 0; gap: 7px; }
+  .portal-navigation { order: 3; width: 100%; justify-content: center; gap: 18px; padding-top: 5px; }
+  .portal-navigation a { font-size: 9px; }
+  .portal-header > .primary-button, .market-header-actions > .primary-button { min-height: 34px; padding: 0 8px; font-size: 8px; }
+  .market-header-actions { margin-right: auto; }
+}
