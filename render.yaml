@@ -3,7 +3,7 @@ services:
     name: central-business-hub
     runtime: node
     region: oregon
-    plan: starter
+    plan: free
     buildCommand: npm ci && npm run build
     startCommand: npm run db:migrate --workspace @central-hub/api && npm run start --workspace @central-hub/api
     healthCheckPath: /api/health
@@ -25,5 +25,5 @@ databases:
   - name: central-business-hub-db
     databaseName: central_hub
     user: central_hub
-    plan: basic-256mb
+    plan: free
     region: oregon
