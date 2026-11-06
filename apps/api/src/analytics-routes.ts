@@ -87,8 +87,8 @@ router.get("/operations/control-tower", authenticate, async (request, response) 
 
 router.get("/admin/audit", authenticate, async (request, response) => {
   const { companyType, role } = request.context!;
-  if (companyType !== "operator" || !["owner", "admin"].includes(role)) {
-    throw new ApiError(403, "سجل التدقيق متاح لمديري المنظومة فقط.", "OPERATOR_REQUIRED");
+  if (companyType !== "operator" || role !== "owner") {
+    throw new ApiError(403, "سجل التدقيق متاح لمالك المنظومة فقط.", "OPERATOR_REQUIRED");
   }
   const result = await query(
     `SELECT a.id, a.company_id AS "companyId", c.display_name AS "companyName",

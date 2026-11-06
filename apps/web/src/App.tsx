@@ -409,6 +409,7 @@ function CompanyApplication() {
   const [session, setSession] = useState<UserSession | null>(null);
   const [loadingSession, setLoadingSession] = useState(true);
   const [sessionError, setSessionError] = useState("");
+  const ownerPortal = window.location.pathname === "/owner";
 
   const refreshSession = useCallback(async () => {
     try {
@@ -431,8 +432,48 @@ function CompanyApplication() {
   useEffect(() => { void refreshSession(); }, [refreshSession]);
 
   if (loadingSession) return <div className="full-screen-state"><span className="spinner" /><p>التحقق من الجلسة والاتصال بالخادم...</p></div>;
-  if (!session) return <AuthenticationPage onAuthenticated={refreshSession} serverError={sessionError} />;
+  if (!session) return <AuthenticationPage onAuthenticated={refreshSession} serverError={sessionError} ownerPortal={ownerPortal} />;
+  if (ownerPortal && (session.activeCompany.type !== "operator" || session.activeCompany.role !== "owner")) {
+    return <OwnerPortalAccess session={session} />;
+  }
   return <Workspace session={session} onSessionChange={refreshSession} />;
+}
+
+function OwnerPortalAccess({ session }: { session: UserSession }) {
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const ownerMembership = session.memberships.find((membership) => membership.type === "operator" && membership.role === "owner");
+
+  async function switchToOwnerWorkspace() {
+    if (!ownerMembership || busy) return;
+    setBusy(true);
+    setError("");
+    try {
+      await apiRequest("/auth/switch-company", { method: "POST", body: { companyId: ownerMembership.company_id } });
+      window.location.assign("/owner");
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "تعذر فتح مساحة مالك المنصة.");
+      setBusy(false);
+    }
+  }
+
+  return <main className="full-screen-state owner-access-page">
+    <section className="owner-access-card" aria-labelledby="owner-access-title">
+      <span className="brand-mark">م</span>
+      <p className="eyebrow">مساحة خاصة</p>
+      <h1 id="owner-access-title">إدارة مالك المنصة</h1>
+      <p>{ownerMembership
+        ? "هذه الجلسة على مساحة أخرى. بدّل إلى مساحة إدارة المنظومة للمتابعة."
+        : "هذه الصفحة لا تفتح إلا بحساب مالك المنصة. تسجيل الشركات العام لا يمنح صلاحية الإدارة."}</p>
+      {error && <div className="form-error" role="alert">{error}</div>}
+      {ownerMembership
+        ? <button className="primary-button owner-access-button" type="button" disabled={busy} onClick={() => void switchToOwnerWorkspace()}>
+          {busy ? "جارٍ فتح مساحة المالك..." : "فتح مساحة مالك المنصة"}
+        </button>
+        : <a className="primary-button owner-access-button" href="/companies">العودة إلى بوابة الشركات</a>}
+      <a className="owner-access-home" href="/">العودة إلى الصفحة الرئيسية</a>
+    </section>
+  </main>;
 }
 
 function MarketingLanding() {
@@ -746,7 +787,11 @@ function coverageValues(coverage: PublicService["coverage"]): string[] {
   return [];
 }
 
-function AuthenticationPage({ onAuthenticated, serverError }: { onAuthenticated: () => Promise<void>; serverError: string }) {
+function AuthenticationPage({ onAuthenticated, serverError, ownerPortal }: {
+  onAuthenticated: () => Promise<void>;
+  serverError: string;
+  ownerPortal: boolean;
+}) {
   const [mode, setMode] = useState<AuthMode>("login");
   const registrationType = new URLSearchParams(window.location.search).get("type");
   const initialCompanyType = ["customer", "supplier", "service_provider", "logistics_provider"].includes(registrationType ?? "")
@@ -797,8 +842,8 @@ function AuthenticationPage({ onAuthenticated, serverError }: { onAuthenticated:
       <section className="auth-form-panel">
         <div className="auth-mobile-brand"><span className="brand-mark">م</span><strong>مركز الأعمال</strong></div>
         <div className="auth-card">
-          <div className="auth-heading"><span className="eyebrow">بوابة الشركات</span><h2>{mode === "login" ? "مرحبًا بعودتك" : "إنشاء حساب شركة"}</h2><p>{mode === "login" ? "سجّل الدخول للوصول إلى حساب شركتك." : "أدخل بيانات المنشأة لبدء مراجعة الحساب."}</p></div>
-          <div className="auth-tabs"><button className={mode === "login" ? "selected" : ""} onClick={() => { setMode("login"); setError(""); }}>تسجيل الدخول</button><button className={mode === "register" ? "selected" : ""} onClick={() => { setMode("register"); setError(""); }}>حساب جديد</button></div>
+          <div className="auth-heading"><span className="eyebrow">{ownerPortal ? "منطقة مالك المنصة" : "بوابة الشركات"}</span><h2>{mode === "login" ? ownerPortal ? "دخول مالك المنصة" : "مرحبًا بعودتك" : "إنشاء حساب شركة"}</h2><p>{ownerPortal ? "سجّل الدخول بحساب المالك المهيأ مسبقًا؛ لا يمكن إنشاء صلاحية المالك من التسجيل العام." : mode === "login" ? "سجّل الدخول للوصول إلى حساب شركتك." : "أدخل بيانات المنشأة لبدء مراجعة الحساب."}</p></div>
+          {!ownerPortal && <div className="auth-tabs"><button className={mode === "login" ? "selected" : ""} onClick={() => { setMode("login"); setError(""); }}>تسجيل الدخول</button><button className={mode === "register" ? "selected" : ""} onClick={() => { setMode("register"); setError(""); }}>حساب جديد</button></div>}
           {error && <div className="form-error" role="alert">{error}</div>}
           <form onSubmit={submit} className="auth-form">
             {mode === "register" && <>
@@ -824,18 +869,27 @@ function AuthenticationPage({ onAuthenticated, serverError }: { onAuthenticated:
 }
 
 function Workspace({ session, onSessionChange }: { session: UserSession; onSessionChange: () => Promise<void> }) {
-  const [activeSection, setActiveSection] = useState<SectionId>("overview");
+  const [activeSection, setActiveSection] = useState<SectionId>(() => {
+    const requestedSection = new URLSearchParams(window.location.search).get("section");
+    return navigation.find((item) => item.id === requestedSection)?.id
+      ?? (window.location.pathname === "/owner" ? "administration" : "overview");
+  });
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [companyMenuOpen, setCompanyMenuOpen] = useState(false);
   const [switchingCompany, setSwitchingCompany] = useState(false);
   const [toast, setToast] = useState("");
   const [workspaceRefreshToken, setWorkspaceRefreshToken] = useState(0);
   const companyType = session.activeCompany.type;
-  const availableNavigation = navigation.filter((item) => item.companies.includes(companyType));
+  const availableNavigation = navigation.filter((item) =>
+    item.companies.includes(companyType) && (item.id !== "administration" || session.activeCompany.role === "owner"));
   const page = titles[activeSection];
 
   useEffect(() => {
-    if (!availableNavigation.some((item) => item.id === activeSection)) setActiveSection("overview");
+    if (availableNavigation.some((item) => item.id === activeSection)) return;
+    setActiveSection("overview");
+    const url = new URL(window.location.href);
+    url.searchParams.delete("section");
+    window.history.replaceState(null, "", `${url.pathname}${url.search}${url.hash}`);
   }, [activeSection, availableNavigation]);
 
   useEffect(() => {
@@ -871,9 +925,19 @@ function Workspace({ session, onSessionChange }: { session: UserSession; onSessi
     }
   }
 
+  function navigateSection(section: SectionId) {
+    setActiveSection(section);
+    setMobileNavOpen(false);
+    const url = new URL(window.location.href);
+    if (section === "overview" && url.pathname !== "/owner") url.searchParams.delete("section");
+    else url.searchParams.set("section", section);
+    window.history.replaceState(null, "", `${url.pathname}${url.search}${url.hash}`);
+  }
+
   return (
     <div className={`app-shell ${mobileNavOpen ? "mobile-nav-open" : ""}`}>
-      <button className="mobile-nav-toggle" onClick={() => setMobileNavOpen((value) => !value)} aria-label="فتح قائمة التنقل">☰</button>
+      <button className="mobile-nav-toggle" onClick={() => setMobileNavOpen((value) => !value)}
+        aria-label={mobileNavOpen ? "إغلاق قائمة التنقل" : "فتح قائمة التنقل"} aria-expanded={mobileNavOpen} aria-controls="workspace-navigation">☰</button>
       <aside className="sidebar">
         <button className="brand brand-button" aria-label="العودة إلى لوحة المتابعة" onClick={() => { setActiveSection("overview"); setMobileNavOpen(false); }}>
           <span className="brand-mark">م</span><span><strong>مركز الأعمال</strong><small>Central Business Hub</small></span>
@@ -894,13 +958,13 @@ function Workspace({ session, onSessionChange }: { session: UserSession; onSessi
             </button>)}
           </div>}
         </div>
-        <nav className="main-nav" aria-label="التنقل الرئيسي">
+        <nav className="main-nav" id="workspace-navigation" aria-label="التنقل الرئيسي">
           {Array.from(new Set(availableNavigation.map((item) => item.group))).map((group) => (
             <div className="nav-group" key={group}><p className="nav-heading">{group}</p>
               {availableNavigation.filter((item) => item.group === group).map((item) => (
                 <button key={item.id} className={`nav-item ${activeSection === item.id ? "active" : ""}`}
                   aria-label={item.label}
-                  onClick={() => { setActiveSection(item.id); setMobileNavOpen(false); }}>
+                  onClick={() => navigateSection(item.id)}>
                   <span className="nav-icon">{item.icon}</span><span>{item.label}</span>
                 </button>
               ))}

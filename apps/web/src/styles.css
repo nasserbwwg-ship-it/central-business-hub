@@ -14,7 +14,7 @@
 }
 
 * { box-sizing: border-box; }
-body { margin: 0; min-width: 360px; min-height: 100vh; }
+body { margin: 0; min-width: 320px; min-height: 100vh; }
 button, input, select, textarea { font: inherit; }
 button { cursor: pointer; }
 button:disabled { cursor: not-allowed; opacity: .62; }
@@ -147,6 +147,15 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .loading-panel, .full-screen-state { display: flex; align-items: center; justify-content: center; gap: 9px; color: #7d8897; font-size: 10px; }
 .loading-panel { min-height: 120px; }
 .full-screen-state { min-height: 100vh; flex-direction: column; }
+.owner-access-page { padding: 20px; }
+.owner-access-card { width: min(440px, 100%); padding: 28px; border: 1px solid var(--line); border-radius: 12px; background: #fff; text-align: center; box-shadow: 0 12px 40px #1723340b; }
+.owner-access-card > .brand-mark { margin: 0 auto 15px; }
+.owner-access-card .eyebrow { margin-bottom: 5px; }
+.owner-access-card h1 { margin: 0; color: var(--ink); font-size: 21px; }
+.owner-access-card > p:not(.eyebrow) { margin: 9px 0 18px; color: #788493; font-size: 11px; line-height: 1.8; }
+.owner-access-button { width: 100%; min-height: 42px; text-decoration: none; }
+.owner-access-home { display: inline-block; margin-top: 15px; color: #6a7886; font-size: 10px; text-decoration: none; }
+.owner-access-home:hover { color: var(--green); }
 .spinner { width: 20px; height: 20px; border: 2px solid #dfe9e5; border-top-color: #27866e; border-radius: 50%; animation: spin .75s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .resource-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; gap: 13px; }
@@ -295,7 +304,7 @@ td { height: 45px; color: #697586; font-size: 8px; }
   .mobile-nav-open .sidebar .profile-button { justify-content: flex-start; }
   .mobile-nav-open .sidebar .help-card { display: flex; }
   .main-content { margin-right: 0; padding-top: 47px; }
-  .mobile-nav-toggle { position: fixed; top: 8px; right: 10px; z-index: 6; display: grid; width: 32px; height: 32px; place-items: center; border: 1px solid #e5e9ef; border-radius: 7px; color: #566477; background: #fff; }
+  .mobile-nav-toggle { position: fixed; top: 4px; right: 6px; z-index: 6; display: grid; width: 40px; height: 40px; place-items: center; border: 1px solid #e5e9ef; border-radius: 7px; color: #566477; background: #fff; }
   .mobile-scrim { position: fixed; inset: 0; z-index: 3; background: #14203177; }
   .mobile-nav-open .mobile-scrim { display: block; }
   .topbar { position: absolute; top: 0; right: 0; left: 0; height: 48px; padding: 0 53px 0 12px; }
@@ -323,6 +332,9 @@ td { height: 45px; color: #697586; font-size: 8px; }
   .auth-form-panel { min-height: 100vh; padding: 24px 18px; }
   .auth-mobile-brand { display: flex; align-items: center; gap: 9px; margin: 0 auto 24px 0; color: #314052; font-size: 12px; }
   .auth-mobile-brand .brand-mark { width: 32px; height: 32px; font-size: 16px; }
+  .owner-access-card { padding: 24px 18px; }
+  .market-title-row { gap: 8px; }
+  .live-tag { flex: 0 0 auto; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }

@@ -112,7 +112,7 @@ router.post("/companies/me/branches", authenticate, requireRole(...adminRoles, "
   response.status(201).json(result.rows[0]);
 });
 
-router.get("/admin/companies", authenticate, requireOperator, requireRole("owner", "admin"), async (request, response) => {
+router.get("/admin/companies", authenticate, requireOperator, requireRole("owner"), async (request, response) => {
   const status = request.query.status;
   const validStatus = status === "pending" || status === "active" || status === "suspended" ? status : null;
   const result = await query(
@@ -126,7 +126,7 @@ router.get("/admin/companies", authenticate, requireOperator, requireRole("owner
   response.json({ data: result.rows });
 });
 
-router.patch("/admin/companies/:id/status", authenticate, requireOperator, requireRole("owner", "admin"), async (request, response) => {
+router.patch("/admin/companies/:id/status", authenticate, requireOperator, requireRole("owner"), async (request, response) => {
   const companyId = parse(uuidSchema, request.params.id);
   const input = parse(z.object({ status: z.enum(["active", "suspended"]) }), request.body);
   const result = await transaction(async (client) => {
