@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">شعار مركز الأعمال</title>
+  <desc id="desc">رمز شبكي يربط أربعة شراكات بمركز أعمال موحد</desc>
+  <defs>
+    <linearGradient id="mark" x1="72" y1="68" x2="438" y2="444" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#78D6BA"/>
+      <stop offset=".58" stop-color="#32AA91"/>
+      <stop offset="1" stop-color="#16816F"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="10"/>
+    </filter>
+  </defs>
+  <rect x="30" y="30" width="452" height="452" rx="126" fill="#F5FAF8"/>
+  <rect x="46" y="46" width="420" height="420" rx="112" fill="#123F36" opacity=".97"/>
+  <g fill="none" stroke="#DDF5EC" stroke-linecap="round" stroke-width="18" opacity=".88">
+    <path d="M256 256 128 128"/>
+    <path d="M256 256 384 128"/>
+    <path d="M256 256 128 384"/>
+    <path d="M256 256 384 384"/>
+  </g>
+  <g fill="url(#mark)">
+    <circle cx="128" cy="128" r="43"/>
+    <circle cx="384" cy="128" r="43"/>
+    <circle cx="128" cy="384" r="43"/>
+    <circle cx="384" cy="384" r="43"/>
+    <circle cx="256" cy="256" r="82"/>
+  </g>
+  <circle cx="256" cy="256" r="44" fill="#123F36"/>
+  <g fill="#FFFFFF">
+    <circle cx="128" cy="128" r="13"/>
+    <circle cx="384" cy="128" r="13"/>
+    <circle cx="128" cy="384" r="13"/>
+    <circle cx="384" cy="384" r="13"/>
+    <circle cx="256" cy="256" r="16"/>
+  </g>
+  <path d="M256 231c-8 0-16 6-16 16v18c0 10 8 16 16 16s16-6 16-16v-18c0-10-8-16-16-16Z" fill="#FFFFFF" opacity=".92"/>
+</svg>

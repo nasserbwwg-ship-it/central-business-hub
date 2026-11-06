@@ -877,16 +877,16 @@ function AuthenticationPage({ onAuthenticated, serverError, ownerPortal }: {
   return (
     <main className="auth-page">
       <section className="auth-brand-panel">
-        <div className="auth-brand"><span className="brand-mark">م</span><div><strong>مركز الأعمال</strong><small>Central Business Hub</small></div></div>
+        <div className="auth-brand"><img className="brand-logo" src="/central-business-hub-logo.svg" alt="" /><div><strong>مركز الأعمال</strong><small>Central Business Hub</small></div></div>
         <div className="auth-brand-copy"><span className="eyebrow">منظومة الأعمال B2B</span><h1>من الطلب إلى<br />إتمام التوريد.</h1><p>بوابة تشغيل واحدة تربط الشركات بالموردين والخدمات والنقل والمخزون، مع متابعة موثقة لكل خطوة.</p></div>
-        <span className="brand-decoration">م</span>
+        <img className="brand-decoration" src="/central-business-hub-logo.svg" alt="" aria-hidden="true" />
         <p className="auth-footer-copy">إدارة متكاملة لسلاسل الإمداد والخدمات بين الشركات.</p>
         <nav className="auth-portal-links" aria-label="بوابات المنظومة">
           <a href="/">الرئيسية</a><a href="/supply">سوق التوريد</a><a href="/services">دليل الخدمات</a>
         </nav>
       </section>
       <section className="auth-form-panel">
-        <div className="auth-mobile-brand"><span className="brand-mark">م</span><strong>مركز الأعمال</strong></div>
+        <div className="auth-mobile-brand"><img className="brand-logo" src="/central-business-hub-logo.svg" alt="" /><strong>مركز الأعمال</strong></div>
         <div className="auth-card">
           <div className="auth-heading"><span className="eyebrow">{ownerPortal ? "منطقة مالك المنصة" : "بوابة الشركات"}</span><h2>{mode === "login" ? ownerPortal ? "دخول مالك المنصة" : "مرحبًا بعودتك" : "إنشاء حساب شركة"}</h2><p>{ownerPortal ? "سجّل الدخول بحساب المالك المهيأ مسبقًا؛ لا يمكن إنشاء صلاحية المالك من التسجيل العام." : mode === "login" ? "سجّل الدخول للوصول إلى حساب شركتك." : "أدخل بيانات المنشأة لبدء مراجعة الحساب."}</p></div>
           {!ownerPortal && <div className="auth-tabs"><button className={mode === "login" ? "selected" : ""} onClick={() => { setMode("login"); setError(""); }}>تسجيل الدخول</button><button className={mode === "register" ? "selected" : ""} onClick={() => { setMode("register"); setError(""); }}>حساب جديد</button></div>}
