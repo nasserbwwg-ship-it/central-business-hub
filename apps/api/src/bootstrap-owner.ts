@@ -52,9 +52,21 @@ async function bootstrapOwner(): Promise<void> {
          FOR UPDATE OF m, c`,
         [userId],
       );
-      invariant(membership.rows[0], 409,
-        "The email is already used by an account that is not an active platform owner.", "OWNER_EMAIL_IN_USE");
-      companyId = membership.rows[0].company_id;
+      if (membership.rows[0]) {
+        companyId = membership.rows[0].company_id;
+      } else {
+        const operatorCompany = await client.query<{ id: string }>(
+          `INSERT INTO companies (legal_name, display_name, type, status, contact_email)
+           VALUES ('Central Business Hub Operator', 'Central Business Hub Operator', 'operator', 'active', $1)
+           RETURNING id`,
+          [email],
+        );
+        companyId = operatorCompany.rows[0]!.id;
+        await client.query(
+          "INSERT INTO company_memberships (company_id, user_id, role) VALUES ($1, $2, 'owner')",
+          [companyId, userId],
+        );
+      }
       await client.query("UPDATE users SET password_hash = $1 WHERE id = $2", [passwordHash, userId]);
       action = "password_reset";
     } else {
