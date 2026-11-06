@@ -4,7 +4,7 @@ services:
     runtime: node
     region: oregon
     plan: free
-    buildCommand: npm ci && npm run build
+    buildCommand: npm ci --include=dev && npm run build
     startCommand: npm run db:migrate --workspace @central-hub/api && npm run start --workspace @central-hub/api
     healthCheckPath: /api/health
     envVars:
