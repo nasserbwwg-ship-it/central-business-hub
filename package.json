@@ -1,0 +1,21 @@
+{
+  "name": "central-business-hub",
+  "private": true,
+  "engines": {
+    "node": ">=22.12.0",
+    "npm": ">=10.9.0"
+  },
+  "workspaces": [
+    "apps/web",
+    "apps/api"
+  ],
+  "scripts": {
+    "dev:web": "npm run dev --workspace @central-hub/web",
+    "dev:api": "npm run dev --workspace @central-hub/api",
+    "build": "npm run build --workspace @central-hub/web && npm run build --workspace @central-hub/api",
+    "typecheck": "npm run typecheck --workspace @central-hub/web && npm run typecheck --workspace @central-hub/api",
+    "db:migrate": "npm run db:migrate --workspace @central-hub/api",
+    "db:seed-admin": "npm run db:seed-admin --workspace @central-hub/api",
+    "test": "npm run test --workspace @central-hub/api"
+  }
+}

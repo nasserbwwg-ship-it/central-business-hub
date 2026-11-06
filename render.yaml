@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: central-business-hub
+    runtime: node
+    region: oregon
+    plan: starter
+    buildCommand: npm ci && npm run build
+    startCommand: npm run db:migrate --workspace @central-hub/api && npm run start --workspace @central-hub/api
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: HOST
+        value: 0.0.0.0
+      - key: TRUST_PROXY
+        value: "true"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: central-business-hub-db
+          property: connectionString
+      - key: DATABASE_SSL
+        value: "false"
+
+databases:
+  - name: central-business-hub-db
+    databaseName: central_hub
+    user: central_hub
+    plan: basic-256mb
+    region: oregon
