@@ -19,9 +19,10 @@ router.get("/public/products", async (request, response) => {
     ? null
     : parse(z.enum(["public", "quote"]), request.query.pricing);
   const result = await query(
-    `SELECT p.id, p.sku, p.name, p.description, p.unit,
+    `SELECT p.id, p.sku, p.name, p.description, p.unit, p.image_url AS "imageUrl",
             p.minimum_order_quantity AS "minimumOrderQuantity", c.id AS "supplierCompanyId",
             c.display_name AS "supplierName", p.pricing_mode AS "pricingMode",
+            COALESCE(c.metadata->>'demo' = 'true', false) AS "isDemo",
             CASE WHEN p.pricing_mode = 'public' THEN p.unit_price END AS "unitPrice",
             p.currency, p.production_capacity AS "productionCapacity", p.lead_time_days AS "leadTimeDays",
             p.delivery_regions AS "deliveryRegions", p.specifications,
@@ -86,9 +87,10 @@ router.get("/products/mine", authenticate, requireCompany("supplier"), async (re
 router.get("/products", authenticate, async (request, response) => {
   const search = typeof request.query.q === "string" ? request.query.q.trim().slice(0, 100) : "";
   const result = await query(
-    `SELECT p.id, p.sku, p.name, p.description, p.unit,
+    `SELECT p.id, p.sku, p.name, p.description, p.unit, p.image_url AS "imageUrl",
             p.minimum_order_quantity AS "minimumOrderQuantity", c.id AS "supplierCompanyId",
             c.display_name AS "supplierName", p.pricing_mode AS "pricingMode",
+            COALESCE(c.metadata->>'demo' = 'true', false) AS "isDemo",
             CASE WHEN p.pricing_mode = 'public' THEN p.unit_price END AS "unitPrice",
             p.currency, p.production_capacity AS "productionCapacity", p.lead_time_days AS "leadTimeDays",
             p.delivery_regions AS "deliveryRegions", p.specifications,

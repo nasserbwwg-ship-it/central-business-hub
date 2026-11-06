@@ -19,6 +19,8 @@ type PublicProduct = {
   sku: string | null;
   name: string;
   description: string | null;
+  imageUrl: string | null;
+  isDemo: boolean;
   unit: string;
   minimumOrderQuantity: number | string;
   supplierCompanyId: string;
@@ -659,6 +661,10 @@ function MarketplacePortal({ kind }: { kind: "supply" | "services" }) {
       <section className="market-content">
         <div className="market-title-row"><div><span className="portal-eyebrow">{isSupply ? "كتالوج المنتجات" : "كتالوج مقدمي الخدمات"}</span><h2>{isSupply ? "اكتشف ما تحتاجه شركتك" : "ابحث عن خدمة الأعمال المناسبة"}</h2><p>{isSupply ? "البيانات المعروضة منشورة من كتالوج الموردين النشطين." : "البيانات المعروضة منشورة من كتالوج مقدمي الخدمات النشطين."}</p></div>
           <span className="live-tag"><i /> {isSupply ? products.length : visibleServices.length} نتيجة</span></div>
+        {isSupply && products.some((product) => product.isDemo) && <div className="demo-catalog-notice" role="note">
+          <strong>كتالوج توضيحي للعرض</strong>
+          <span>المنتجات والأسعار والموردون تجريبيون، والصور للتوضيح فقط وليست صور منتجات فعلية.</span>
+        </div>}
         <div className="market-filters">
           <label className="market-search"><span aria-hidden="true">⌕</span><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder={isSupply ? "ابحث باسم المنتج أو المورد أو الرمز..." : "ابحث باسم الخدمة أو التصنيف أو مقدمها..."} aria-label="البحث في الدليل" /></label>
           {!isSupply && <><label className="market-filter"><span>التصنيف</span><select value={category} onChange={(event) => setCategory(event.target.value)}><option value="">كل التصنيفات</option>{categories.map((value) => <option key={value} value={value}>{value}</option>)}</select></label><label className="market-filter"><span>مدينة التغطية</span><input value={city} onChange={(event) => setCity(event.target.value)} placeholder="مثال: الرياض" /></label></>}
@@ -669,8 +675,8 @@ function MarketplacePortal({ kind }: { kind: "supply" | "services" }) {
         {catalogError && <div className="notice warning market-notice" role="alert">{catalogError}</div>}
         {loading ? <div className="market-loading"><span className="spinner" /> جارٍ تحميل البيانات المنشورة...</div> : isSupply
           ? <div className="market-product-grid">{products.map((product) => <article className="market-product-card" key={product.id}>
-            <div className="product-card-visual"><span>{product.name.slice(0, 1)}</span><small>{product.sku || "منتج مورد"}</small></div>
-            <div className="product-card-body"><div className="product-vendor"><span className="verified-mark">✓</span>{product.supplierName}</div><h3>{product.name}</h3><p>{product.description || "تواصل مع المورد لمعرفة المواصفات والتوفر."}</p>
+            <div className="product-card-visual"><span>{product.name.slice(0, 1)}</span>{product.imageUrl && <img src={product.imageUrl} alt={`صورة توضيحية: ${product.name}`} loading="lazy" referrerPolicy="no-referrer" onError={(event) => event.currentTarget.remove()} />}{product.isDemo && <strong className="demo-product-badge">بيانات تجريبية</strong>}<small>{product.sku || "منتج مورد"}</small></div>
+            <div className="product-card-body"><div className="product-vendor"><span className={product.isDemo ? "demo-company-mark" : "verified-mark"}>{product.isDemo ? "ت" : "✓"}</span>{product.supplierName}</div><h3>{product.name}</h3><p>{product.description || "تواصل مع المورد لمعرفة المواصفات والتوفر."}</p>
               <div className="product-meta"><div><small>{product.pricingMode === "public" ? "سعر الوحدة" : "التسعير"}</small><strong>{product.pricingMode === "public" && product.unitPrice !== null
                 ? `${new Intl.NumberFormat("ar-SA", { maximumFractionDigits: 2 }).format(Number(product.unitPrice))} ${product.currency}`
                 : "حسب عرض المورد"}</strong></div><div><small>الحد الأدنى</small><strong>{product.minimumOrderQuantity} <span>{product.unit}</span></strong></div></div>

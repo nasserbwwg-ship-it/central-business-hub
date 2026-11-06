@@ -5,7 +5,7 @@ services:
     region: oregon
     plan: free
     buildCommand: npm ci --include=dev && npm run build
-    startCommand: npm run db:migrate --workspace @central-hub/api && npm run start --workspace @central-hub/api
+    startCommand: npm run db:migrate --workspace @central-hub/api && npm run db:seed-demo --workspace @central-hub/api && npm run start --workspace @central-hub/api
     healthCheckPath: /api/health
     envVars:
       - key: NODE_ENV
@@ -20,6 +20,8 @@ services:
           property: connectionString
       - key: DATABASE_SSL
         value: "false"
+      - key: DEMO_DATA_ENABLED
+        value: "true"
 
 databases:
   - name: central-business-hub-db

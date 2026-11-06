@@ -429,12 +429,17 @@ td { height: 45px; color: #697586; font-size: 8px; }
 .market-product-grid, .service-card-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 15px; }
 .market-product-card, .service-card { overflow: hidden; border: 1px solid #e7ece8; border-radius: 11px; background: #fff; transition: box-shadow .18s, transform .18s; }
 .market-product-card:hover, .service-card:hover { box-shadow: 0 12px 28px #24372d0c; transform: translateY(-2px); }
-.product-card-visual { position: relative; display: grid; height: 124px; place-items: center; background: linear-gradient(140deg, #eff4ef, #e5eee8); }
+.product-card-visual { position: relative; display: grid; height: 174px; place-items: center; background: linear-gradient(140deg, #eff4ef, #e5eee8); }
 .product-card-visual > span { display: grid; width: 54px; height: 54px; place-items: center; border: 1px solid #ffffffcf; border-radius: 17px; color: #3d8d75; background: #fff; font-size: 24px; font-weight: 650; box-shadow: 0 5px 15px #273c2b0d; }
-.product-card-visual > small { position: absolute; right: 11px; bottom: 9px; color: #83938b; font-size: 8px; }
+.product-card-visual > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.product-card-visual > small { position: absolute; z-index: 1; right: 11px; bottom: 9px; padding: 4px 7px; border-radius: 5px; color: #fff; background: #263b32b8; font-size: 8px; }
+.demo-product-badge { position: absolute; z-index: 1; top: 10px; right: 10px; padding: 5px 8px; border: 1px solid #ffffffa6; border-radius: 20px; color: #36493f; background: #fffF; font-size: 8px; }
+.demo-catalog-notice { display: grid; gap: 4px; padding: 12px 15px; margin: 15px 0; border: 1px solid #eadcae; border-radius: 9px; color: #715c28; background: #fffaf0; font-size: 10px; }
+.demo-catalog-notice strong { font-size: 11px; }
 .product-card-body { padding: 15px; }
 .product-vendor, .service-provider { display: flex; align-items: center; gap: 6px; color: #71827c; font-size: 9px; }
 .verified-mark { display: grid; width: 15px; height: 15px; flex: 0 0 auto; place-items: center; border-radius: 50%; color: #31866f; background: #e8f4ec; font-size: 9px; font-weight: 700; }
+.demo-company-mark { display: grid; width: 15px; height: 15px; flex: 0 0 auto; place-items: center; border-radius: 50%; color: #8a6925; background: #fff1c9; font-size: 8px; font-weight: 700; }
 .product-card-body h3, .service-card h3 { margin: 10px 0 6px; color: #304355; font-size: 14px; font-weight: 650; }
 .product-card-body > p, .service-card > p { min-height: 36px; margin: 0; color: #87938f; font-size: 9px; line-height: 1.8; }
 .product-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 11px 0; margin: 12px 0; border-top: 1px solid #edf0ed; border-bottom: 1px solid #edf0ed; }
@@ -562,7 +567,7 @@ td { height: 45px; color: #697586; font-size: 8px; }
   .market-filter { min-width: 0; flex: 1; border-right: 0; }
   .market-filter-hint { min-height: 29px; padding: 0 4px; font-size: 8px; }
   .market-product-grid, .service-card-grid { grid-template-columns: 1fr; gap: 10px; }
-  .product-card-visual { height: 100px; }
+  .product-card-visual { height: 148px; }
   .product-card-body { padding: 13px; }
   .service-card { padding: 14px; }
   .market-crosslink { align-items: flex-start; flex-direction: column; padding: 20px 15px; margin: 0 0 30px; }
