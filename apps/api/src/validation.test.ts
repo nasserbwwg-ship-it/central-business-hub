@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { ApiError } from "./errors.js";
+import { isWithinReplenishmentLimits } from "./managed-inventory-policy.js";
 import {
   assertRfqProductConstraints, emailSchema, parse, passwordSchema, productPriceTiersSchema,
   productSpecificationsSchema, quantitySchema, rfqAwardStatus, textSchema, uuidSchema,
@@ -60,6 +61,26 @@ test("RFQ award status reflects partial and complete multi-supplier awards", () 
     error instanceof ApiError && error.code === "INVALID_RFQ_AWARD_COUNTS");
   assert.throws(() => rfqAwardStatus(2, 3), (error: unknown) =>
     error instanceof ApiError && error.code === "INVALID_RFQ_AWARD_COUNTS");
+});
+
+test("managed replenishment only auto-accepts valid SAR quotes within every customer cap", () => {
+  const limits = {
+    quoteAmount: 120,
+    currency: "SAR",
+    perOrderBudget: 150,
+    monthlyBudget: 300,
+    monthlySpend: 100,
+    reorderQuantity: 10,
+    maxUnitPrice: 15,
+    validUntil: "2099-12-31",
+    today: "2099-01-01",
+  };
+  assert.equal(isWithinReplenishmentLimits(limits), true);
+  assert.equal(isWithinReplenishmentLimits({ ...limits, quoteAmount: 151 }), false);
+  assert.equal(isWithinReplenishmentLimits({ ...limits, monthlySpend: 190 }), false);
+  assert.equal(isWithinReplenishmentLimits({ ...limits, quoteAmount: 151, perOrderBudget: 500 }), false);
+  assert.equal(isWithinReplenishmentLimits({ ...limits, currency: "USD" }), false);
+  assert.equal(isWithinReplenishmentLimits({ ...limits, validUntil: "2098-12-31" }), false);
 });
 
 test("public product volume prices must have unique positive quantity breaks", () => {

@@ -4,6 +4,7 @@ import authRoutes from "./auth-routes.js";
 import catalogueRoutes from "./catalogue-routes.js";
 import commercialRoutes from "./commercial-routes.js";
 import companyRoutes from "./company-routes.js";
+import managedInventoryRoutes from "./managed-inventory-routes.js";
 import operationsRoutes from "./operations-routes.js";
 import procurementRoutes from "./procurement-routes.js";
 import riskRoutes from "./risk-routes.js";
@@ -16,6 +17,7 @@ routes.use(catalogueRoutes);
 routes.use(procurementRoutes);
 routes.use(operationsRoutes);
 routes.use(commercialRoutes);
+routes.use(managedInventoryRoutes);
 routes.use(riskRoutes);
 routes.use(analyticsRoutes);
 

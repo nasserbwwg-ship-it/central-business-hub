@@ -3,6 +3,7 @@ import { z } from "zod";
 import { authenticate, requireCompany, requireRole } from "./auth.js";
 import { audit, ensureCompanyActive, query, transaction } from "./db.js";
 import { ApiError, invariant } from "./errors.js";
+import { tryAutoAcceptManagedQuote } from "./managed-inventory.js";
 import { assertRfqProductConstraints, parse, quantitySchema, rfqAwardStatus, textSchema, uuidSchema } from "./validation.js";
 
 const router = Router();
@@ -185,8 +186,27 @@ router.post("/rfqs/:id/quotes", authenticate, requireCompany("supplier"), requir
       "UPDATE rfqs SET status = CASE WHEN status = 'partially_awarded' THEN status ELSE 'reviewing'::rfq_status END, updated_at = now() WHERE id = $1",
       [rfqId],
     );
+    await tryAutoAcceptManagedQuote(
+      client,
+      quote.rows[0].id,
+      rfqId,
+      context.companyId,
+      String(quote.rows[0].totalAmount),
+      input.currency,
+      input.validUntil ?? null,
+    );
+    const finalQuote = await client.query<{ status: string; order_reference: string | null }>(
+      `SELECT q.status, o.reference AS order_reference
+       FROM supplier_quotes q LEFT JOIN orders o ON o.quote_id = q.id
+       WHERE q.id = $1`,
+      [quote.rows[0].id],
+    );
     await audit(client, context.companyId, context.userId, "quote.submitted", "supplier_quote", quote.rows[0].id);
-    return quote.rows[0];
+    return {
+      ...quote.rows[0],
+      status: finalQuote.rows[0]!.status,
+      orderReference: finalQuote.rows[0]!.order_reference,
+    };
   });
   response.status(201).json(created);
 });
@@ -212,6 +232,7 @@ router.post("/quotes/:id/reject", authenticate, requireCompany("customer"), requ
 router.post("/quotes/:id/accept", authenticate, requireCompany("customer"), requireRole("owner", "admin", "manager", "purchaser"), async (request, response) => {
   const quoteId = parse(uuidSchema, request.params.id);
   const context = request.context!;
+  await ensureCompanyActive(context.companyId);
   const order = await transaction(async (client) => {
     const quote = await client.query<{
       id: string; rfq_id: string; customer_company_id: string; supplier_company_id: string;
@@ -244,6 +265,12 @@ router.post("/quotes/:id/accept", authenticate, requireCompany("customer"), requ
        RETURNING id, reference, rfq_id AS "rfqId", status, currency,
                  total_amount AS "totalAmount", created_at AS "createdAt"`,
       [selected.rfq_id, quoteId, context.companyId, selected.supplier_company_id, selected.currency, selected.total_amount],
+    );
+    await client.query(
+      `UPDATE managed_replenishments
+       SET status = 'ordered', order_id = $1, authorized_amount = $2, block_reason = NULL, updated_at = now()
+       WHERE rfq_id = $3 AND status IN ('pending_quote', 'requires_approval')`,
+      [created.rows[0].id, selected.total_amount, selected.rfq_id],
     );
     await audit(client, context.companyId, context.userId, "quote.accepted", "supplier_quote", quoteId, { orderId: created.rows[0].id });
     return created.rows[0];
@@ -329,6 +356,13 @@ router.patch("/orders/:id/status", authenticate, requireRole("owner", "admin", "
     const customerCancel = isCustomer && input.status === "cancelled" && record.status === "confirmed";
     invariant(supplierTransition || customerCancel, 409, "تغيير الحالة غير مسموح في هذه المرحلة.", "INVALID_STATUS_TRANSITION");
     await client.query("UPDATE orders SET status = $1 WHERE id = $2", [input.status, orderId]);
+    if (input.status === "cancelled") {
+      await client.query(
+        `UPDATE managed_replenishments SET status = 'cancelled', updated_at = now()
+         WHERE order_id = $1 AND status = 'ordered'`,
+        [orderId],
+      );
+    }
     await audit(client, context.companyId, context.userId, `order.${input.status}`, "order", orderId);
     return { id: orderId, status: input.status };
   });
@@ -355,6 +389,11 @@ router.post("/orders/:id/complete", authenticate, requireCompany("customer"), re
     invariant(shipments.rows[0]!.total > 0 && shipments.rows[0]!.total === shipments.rows[0]!.delivered,
       409, "لا يمكن إغلاق الطلب حتى تُسلّم كل الشحنات المرتبطة وتُسجل إثباتات التسليم.", "SHIPMENTS_NOT_DELIVERED");
     await client.query("UPDATE orders SET status = 'fulfilled' WHERE id = $1", [orderId]);
+    await client.query(
+      `UPDATE managed_replenishments SET status = 'awaiting_stock', updated_at = now()
+       WHERE order_id = $1 AND status = 'ordered'`,
+      [orderId],
+    );
     await audit(client, context.companyId, context.userId, "order.receipt.confirmed", "order", orderId, { confirmed: input.confirmReceipt });
     return { id: orderId, status: "fulfilled" };
   });

@@ -102,12 +102,12 @@ const titles: Record<SectionId, { title: string; description: string }> = {
   logistics: { title: "النقل والشحن", description: "توافق الناقلين ومسار الشحنة وإثبات التسليم." },
   inventory: { title: "المخزون والجرد", description: "المستودعات والباركود وحركات الأصناف والجرد." },
   contracts: { title: "العقود", description: "توثيق موافقة الطرفين على بنود الاتفاقية." },
-  finance: { title: "الفوترة والاشتراكات", description: "فواتير ومستحقات مسجلة يدويًا واشتراكات المنشأة." },
+  finance: { title: "الفوترة والاشتراكات", description: "اطلب إدارة تشغيلية للمخزون والتوريد، أو تابع الفواتير والاشتراكات. رسوم الخدمة تُعرض للموافقة ولا يوجد تحصيل آلي." },
   claims: { title: "الشكاوى والمطالبات", description: "متابعة المطالبات المرتبطة بأمر شراء أو شحنة." },
   operations: { title: "مركز العمليات", description: "استثناءات الطلبات والشحنات والمطالبات المفتوحة." },
   analytics: { title: "التقارير والتحليلات", description: "المشتريات والإيراد المحصل والوفاء بالطلبات." },
   integrations: { title: "تكامل الأنظمة", description: "تسجيل إعدادات الربط دون تخزين أسرار أو إرسال بيانات خارجية." },
-  administration: { title: "إدارة المنظومة", description: "اعتماد الشركات ومراجعة سجل التدقيق." },
+  administration: { title: "إدارة المنظومة", description: "اعتماد الشركات، مراجعة سجل التدقيق، وتسعير طلبات إدارة المخزون والتوريد." },
 };
 
 const sources: Partial<Record<SectionId, DataSource[]>> = {
@@ -142,11 +142,15 @@ const sources: Partial<Record<SectionId, DataSource[]>> = {
     { id: "movements", title: "حركات المخزون", endpoint: "/inventory/movements", columns: ["warehouseName", "productName", "movementType", "quantity", "unit", "reference", "createdBy", "createdAt"] },
     { id: "counts", title: "جلسات الجرد", endpoint: "/inventory/counts", columns: ["warehouseName", "status", "itemCount", "discrepancyCount", "createdAt", "completedAt"] },
     { id: "alerts", title: "تنبيهات المخزون", endpoint: "/inventory/alerts", responseKey: "inventoryAlerts" },
+    { id: "managedReplenishments", title: "متابعة إعادة التوريد الآلية", endpoint: "/managed-inventory/replenishments", columns: ["warehouseName", "productName", "currentQuantity", "requestedQuantity", "status", "rfqReference", "orderReference", "authorizedAmount", "blockReason", "createdAt"] },
   ],
   contracts: [{ id: "contracts", title: "العقود والاتفاقيات", endpoint: "/contracts", columns: ["reference", "title", "customerName", "counterpartyName", "signatureCount", "status", "startsOn", "endsOn"] }],
   finance: [
     { id: "invoices", title: "الفواتير", endpoint: "/invoices", columns: ["reference", "issuerName", "customerName", "status", "subtotal", "taxAmount", "totalAmount", "paidAmount", "dueOn"] },
     { id: "subscriptions", title: "اشتراكات الشركة", endpoint: "/subscriptions", columns: ["planCode", "status", "priceMonthly", "currency", "startsAt", "endsAt"] },
+    { id: "managedServices", title: "خدمة إدارة المخزون والتوريد", endpoint: "/managed-inventory/services", columns: ["warehouseName", "status", "autoReorder", "perOrderBudget", "monthlyBudget", "monthlyFee", "quoteNotes", "createdAt"] },
+    { id: "managedRules", title: "حدود الأصناف والموردين المصرح بهم", endpoint: "/managed-inventory/rules", columns: ["productName", "supplierName", "reorderBelowQuantity", "reorderQuantity", "maxUnitPrice", "isActive"] },
+    { id: "managedReplenishments", title: "متابعة طلبات إعادة التوريد", endpoint: "/managed-inventory/replenishments", columns: ["warehouseName", "productName", "currentQuantity", "requestedQuantity", "status", "rfqReference", "orderReference", "authorizedAmount", "blockReason", "createdAt"] },
   ],
   claims: [{ id: "claims", title: "الشكاوى والمطالبات", endpoint: "/claims", columns: ["reference", "title", "claimantName", "respondentName", "status", "createdAt", "resolvedAt"] }],
   operations: [{ id: "controlTower", title: "العناصر المفتوحة", endpoint: "/operations/control-tower", responseKey: "controlTower", columns: ["_group", "reference", "title", "status", "createdAt"] }],
@@ -154,6 +158,8 @@ const sources: Partial<Record<SectionId, DataSource[]>> = {
   integrations: [{ id: "integrations", title: "إعدادات الربط", endpoint: "/integrations", columns: ["name", "integrationType", "endpointUrl", "status", "configuration", "createdAt"] }],
   administration: [
     { id: "companies", title: "الشركات والاعتمادات", endpoint: "/admin/companies", columns: ["displayName", "legalName", "type", "status", "registrationNumber", "taxNumber", "contactEmail", "createdAt"] },
+    { id: "managedServiceRequests", title: "طلبات إدارة المخزون والتوريد", endpoint: "/admin/managed-inventory", columns: ["customerName", "warehouseName", "warehouseCity", "status", "ruleCount", "scopeSummary", "autoReorder", "perOrderBudget", "monthlyBudget", "monthlyFee", "requestNotes", "quoteNotes", "createdAt"] },
+    { id: "managedReplenishments", title: "مراقبة إعادة التوريد", endpoint: "/admin/managed-inventory/replenishments", columns: ["customerName", "warehouseName", "productName", "currentQuantity", "requestedQuantity", "status", "rfqReference", "orderReference", "authorizedAmount", "blockReason", "createdAt"] },
     { id: "audit", title: "سجل التدقيق", endpoint: "/admin/audit", columns: ["companyName", "actorName", "eventType", "entityType", "entityId", "details", "createdAt"] },
   ],
 };
@@ -301,6 +307,24 @@ const formCatalog: Record<string, FormDefinition> = {
       { value: "supplier_premium", label: "مزايا المورد" }, { value: "enterprise", label: "المؤسسات" },
     ]),
   ] },
+  managedService: { id: "managedService", title: "طلب خدمة إدارة المخزون والتوريد", endpoint: "/managed-inventory/services", fields: [
+    sourceField("warehouseId", "المستودع", "/inventory/warehouses", true),
+    choiceField("autoReorder", "تفويض إعادة التوريد", [
+      { value: "true", label: "السماح بالشراء الآلي ضمن السقوف أدناه" },
+      { value: "false", label: "إنشاء طلب عروض تلقائيًا، مع اعتماد العميل قبل الشراء" },
+    ]),
+    field("perOrderBudget", "السقف الأعلى للطلب الواحد (ريال)", "money", true, "لا ينفذ شراء يتجاوز هذا المبلغ."),
+    field("monthlyBudget", "السقف الأعلى لإجمالي التوريد خلال الشهر (ريال)", "money", true, "يجب أن يساوي سقف الطلب أو يزيد عليه."),
+    field("requestNotes", "حجم العمل أو ملاحظات المستودع", "textarea"),
+  ] },
+  managedRule: { id: "managedRule", title: "تحديد صنف ومورد وسقوف إعادة التوريد", endpoint: "/managed-inventory/rules", fields: [
+    sourceField("serviceId", "طلب الخدمة المرتبط", "/managed-inventory/service-options", true),
+    sourceField("inventoryProductId", "صنف المخزون المرتبط بمنتج المورد", "/inventory/products", true),
+    sourceField("supplierCompanyId", "المورد المحدد", "/directory/companies?type=supplier", true),
+    field("reorderBelowQuantity", "ابدأ الطلب عندما يصل المخزون إلى (أو أقل من)", "number", true),
+    field("reorderQuantity", "كمية إعادة التوريد الثابتة", "number", true),
+    field("maxUnitPrice", "أعلى سعر مسموح للوحدة (ريال)", "money", true),
+  ] },
   claim: { id: "claim", title: "فتح شكوى على أمر شراء", endpoint: "/claims", fields: [
     sourceField("orderId", "أمر الشراء", "/orders", true),
     field("respondentCompanyId", "رقم الشركة المقابلة (اختياري)", "text"),
@@ -369,8 +393,19 @@ function labelFor(key: string): string {
     taxAmount: "الضريبة", paidAmount: "المدفوع المسجل", dueOn: "الاستحقاق", startsOn: "بداية العقد",
     endsOn: "نهاية العقد", signatureCount: "التوقيعات", claimantName: "مقدم المطالبة",
     respondentName: "الطرف المقابل", resolvedAt: "تاريخ المعالجة", warehouseName: "المستودع",
+    warehouseCity: "مدينة المستودع", autoReorder: "شراء آلي مفوض",
+    perOrderBudget: "سقف الطلب الواحد (ريال)", monthlyBudget: "سقف الشهر (ريال)",
+    monthlyFee: "الرسوم الشهرية (ريال)", quoteNotes: "تفاصيل العرض", requestNotes: "ملاحظات الطلب",
+    ruleCount: "الأصناف المحددة", serviceStatus: "حالة الخدمة", serviceId: "طلب الخدمة",
+    supplierName: "المورد المحدد", supplierCompanyId: "المورد المحدد",
+    reorderBelowQuantity: "حد بدء إعادة التوريد", reorderQuantity: "كمية إعادة التوريد",
+    maxUnitPrice: "أقصى سعر للوحدة (ريال)", currentQuantity: "المخزون عند التنبيه",
+    requestedQuantity: "كمية الطلب", authorizedAmount: "قيمة الشراء المفوضة",
+    blockReason: "سبب طلب المراجعة", rfqReference: "طلب عروض السعر", orderReference: "أمر الشراء",
+    scopeSummary: "الأصناف والكميات المطلوبة",
     warehouseId: "معرف المستودع", barcode: "الباركود", lowStockThreshold: "حد التنبيه",
     productName: "الصنف", productId: "الصنف", batchNumber: "الدفعة", expiresOn: "الصلاحية",
+    sourceSupplierName: "المورد المرتبط",
     quantity: "الكمية", movementType: "نوع الحركة", createdBy: "سجلها",
     itemCount: "عدد الأصناف", discrepancyCount: "الفروقات", completedAt: "تاريخ الإكمال",
     pickupCity: "من مدينة", deliveryCity: "إلى مدينة", pickupAddress: "عنوان الاستلام",
@@ -487,6 +522,7 @@ function MarketingLanding() {
     { number: "06", title: "العقود والصفقات", description: "طلبات عروض الأسعار والعروض وأوامر الشراء والعقود والمطالبات.", href: "/companies", action: "إدارة الصفقات", icon: "ع" },
     { number: "07", title: "الإدارة والتحليلات", description: "لوحة المشغل لمراجعة الشركات والعمليات ومؤشرات الأعمال.", href: "/companies", action: "بوابة المشغل", icon: "إ" },
     { number: "08", title: "التشغيل الميداني", description: "واجهات متجاوبة لأعمال المستودع والنقل ومتابعة الطلبات.", href: "/companies", action: "استكشف مساحة العمل", icon: "↗" },
+    { number: "09", title: "إدارة المخزون والتوريد", description: "اطلب متابعة مخزون مستودعك، وحدد الموردين وسقوف إعادة التوريد الآلية.", href: "/companies?section=finance", action: "اطلب الخدمة التشغيلية", icon: "↻" },
   ];
 
   return <div className="portal-page landing-page" dir="rtl">
@@ -517,7 +553,7 @@ function MarketingLanding() {
         </div>
       </section>
       <section className="portal-section platform-section" id="platforms">
-        <div className="section-intro"><div><span className="portal-eyebrow">ثمانية مجالات عمل</span><h2>بوابات مستقلة، منظومة واحدة</h2></div><p>ابدأ من التجربة المناسبة لك؛ الدخول والصلاحيات والبيانات التشغيلية تظل محكومة بمساحة شركتك.</p></div>
+        <div className="section-intro"><div><span className="portal-eyebrow">تسعة مجالات عمل</span><h2>بوابات مستقلة، منظومة واحدة</h2></div><p>ابدأ من التجربة المناسبة لك؛ الدخول والصلاحيات والبيانات التشغيلية تظل محكومة بمساحة شركتك.</p></div>
         <div className="platform-grid">{platforms.map((platform) => <a className="platform-card" href={platform.href} key={platform.number}>
           <div className="platform-card-top"><span className="platform-icon">{platform.icon}</span><span className="platform-number">{platform.number}</span></div>
           <h3>{platform.title}</h3><p>{platform.description}</p><span className="platform-action">{platform.action}<span aria-hidden="true"> ←</span></span>
@@ -1016,6 +1052,12 @@ function companyTypeLabel(type: CompanyType): string {
 
 function resourcesFor(section: SectionId, companyType: CompanyType): DataSource[] {
   const configured = sources[section] ?? [];
+  if (section === "finance" && companyType !== "customer") {
+    return configured.filter((source) => source.id === "invoices" || source.id === "subscriptions");
+  }
+  if (section === "inventory" && companyType !== "customer") {
+    return configured.filter((source) => source.id !== "managedReplenishments");
+  }
   if (section === "suppliers") return companyType === "supplier" ? configured.slice(0, 1) : configured.slice(1);
   if (section === "services") return companyType === "service_provider" ? configured.filter((source) => source.id !== "marketplace") : configured.filter((source) => source.id !== "listings");
   if (section === "logistics") return companyType === "logistics_provider" ? configured : configured.filter((source) => source.id === "shipments");
@@ -1040,6 +1082,7 @@ function ModuleActions({ section, companyType, onSuccess }: { section: SectionId
   if (section === "contracts" && companyType === "customer") forms.push(formCatalog.contract);
   if (section === "finance") {
     if (companyType === "supplier" || companyType === "service_provider" || companyType === "logistics_provider" || companyType === "operator") forms.push(formCatalog.invoice);
+    if (companyType === "customer") forms.push(formCatalog.managedService, formCatalog.managedRule);
     forms.push(formCatalog.subscription);
   }
   if (section === "claims") forms.push(formCatalog.claim);
@@ -1212,6 +1255,9 @@ function WorkspacePage({ section, companyType, onToast, refreshToken }: {
   if (pageSources.length === 0) return <div className="panel empty-panel"><h2>غير متاح لهذا النوع من الحسابات</h2><p>انتقل إلى مساحة الشركة أو المنصة المناسبة.</p></div>;
 
   return <>
+    {section === "finance" && companyType === "customer" && <div className="notice warning">
+      خدمة إعادة التوريد تعتمد على حركات المخزون المسجلة هنا، ولا تقرأ مستودعًا خارجيًا أو نظام ERP/POS. قبول عرض المورد ضمن السقوف ينشئ أمر شراء فقط؛ لا يوجد دفع آلي، ويُطلب الشحن وإسناد الناقل من قسم النقل والشحن.
+    </div>}
     <div className="resource-grid">{pageSources.map((source) => {
       const result = data[source.id] ?? { rows: [], error: "" };
       if (source.id === "company" && result.rows[0]) {
@@ -1252,6 +1298,41 @@ type RowAction = {
 function actionsFor(sourceId: string, row: DataRow, companyType: CompanyType): RowAction[] {
   const id = String(row.id ?? "");
   const status = String(row.status ?? "");
+  if (sourceId === "managedRules" && companyType === "customer") return [{
+    label: "تعديل تفويض الصنف",
+    kind: "form",
+    title: "تعديل حدود إعادة التوريد",
+    endpoint: () => `/managed-inventory/rules/${encodeURIComponent(id)}`,
+    method: "PATCH",
+    fields: [
+      sourceField("supplierCompanyId", "المورد المحدد", "/directory/companies?type=supplier"),
+      field("reorderBelowQuantity", "حد بدء الطلب", "number"),
+      field("reorderQuantity", "كمية إعادة التوريد", "number"),
+      field("maxUnitPrice", "أعلى سعر للوحدة (ريال)", "money"),
+      choiceField("isActive", "حالة القاعدة", [
+        { value: "true", label: "مفعلة" }, { value: "false", label: "متوقفة" },
+      ], false),
+    ],
+  }];
+  if (sourceId === "managedServiceRequests" && companyType === "operator") {
+    if (status === "requested") return [
+      { label: "إرسال عرض شهري", kind: "form", title: "تسعير خدمة إدارة المخزون", endpoint: () => `/admin/managed-inventory/${encodeURIComponent(id)}/quote`, method: "PATCH", fields: [
+        field("monthlyFee", "الرسوم الشهرية المقترحة (ريال)", "money", true),
+        field("quoteNotes", "نطاق الخدمة والتسعير", "textarea", true),
+      ] },
+      { label: "رفض الطلب", endpoint: () => `/admin/managed-inventory/${encodeURIComponent(id)}/status`, method: "PATCH", body: () => ({ status: "rejected" }), confirm: "رفض طلب الخدمة وإبلاغ الشركة؟" },
+    ];
+  }
+  if (sourceId === "managedServices" && companyType === "customer") {
+    if (status === "quoted") return [
+      { label: "قبول العرض وتفعيل الخدمة", endpoint: () => `/managed-inventory/services/${encodeURIComponent(id)}/accept`, confirm: "قبول الرسوم الشهرية المعروضة وتفعيل الخدمة؟ لا يوجد تحصيل آلي، والشراء الآلي محكوم بالسقوف التي أدخلتها.", successMessage: "قُبل عرض الخدمة." },
+      { label: "إلغاء الطلب", endpoint: () => `/managed-inventory/services/${encodeURIComponent(id)}/cancel`, confirm: "إلغاء طلب الخدمة؟" },
+    ];
+    if (["requested", "active", "paused"].includes(status)) return [
+      ...(status === "paused" ? [{ label: "استئناف الخدمة", endpoint: () => `/managed-inventory/services/${encodeURIComponent(id)}/resume`, confirm: "استئناف خدمة إدارة المخزون والتوريد وإعادة فحص المخزون؟" }] : []),
+      { label: status === "requested" ? "إلغاء الطلب" : "إلغاء الخدمة", endpoint: () => `/managed-inventory/services/${encodeURIComponent(id)}/cancel`, confirm: "إلغاء طلب خدمة إدارة المخزون والتوريد؟" },
+    ];
+  }
   if (sourceId === "companies" && companyType === "operator") {
     if (status === "pending") return [
       { label: "اعتماد الشركة", endpoint: () => `/admin/companies/${encodeURIComponent(id)}/status`, method: "PATCH", body: () => ({ status: "active" }), confirm: "اعتماد بيانات الشركة وإتاحة المنصة لها؟", successMessage: "تم اعتماد الشركة." },
@@ -1373,6 +1454,10 @@ function renderCell(key: string, value: unknown): ReactNode {
     return groups[String(value)] ?? displayValue(value);
   }
   if (key === "status") return <span className={`status-badge ${statusTone(value)}`}>{statusLabel(value)}</span>;
+  if (["perOrderBudget", "monthlyBudget", "monthlyFee", "maxUnitPrice", "authorizedAmount"].includes(key)
+    && value !== null && value !== undefined && Number.isFinite(Number(value))) {
+    return `${new Intl.NumberFormat("ar-SA", { maximumFractionDigits: 2 }).format(Number(value))} ر.س`;
+  }
   if (key.endsWith("At") || key.endsWith("On") || key.endsWith("Date")) {
     if (typeof value === "string" && value) {
       const date = new Date(value);
@@ -1403,6 +1488,9 @@ function statusLabel(value: unknown): string {
     resolved: "تم الحل", closed: "مغلق", trialing: "فترة تجريبية", past_due: "متأخر",
     paid: "مدفوع", partially_paid: "مدفوع جزئيًا", issued: "صادر", overdue: "متأخر",
     void: "ملغى", terminated: "منتهٍ",
+    requested: "بانتظار عرض السعر", quoted: "بانتظار موافقة العميل", paused: "متوقف مؤقتًا",
+    requires_approval: "يتطلب موافقة", pending_quote: "بانتظار عرض المورد", ordered: "تم إنشاء أمر الشراء",
+    awaiting_stock: "بانتظار تحديث المخزون",
   };
   return labels[status] ?? status.replaceAll("_", " ");
 }
@@ -1610,6 +1698,10 @@ function FormDialog({ form, endpointOverride, methodOverride, initialValues, ini
         body[item.key] = value === "true";
       } else if (item.key === "isIncrease") {
         body[item.key] = value === "true";
+      } else if (item.key === "autoReorder") {
+        body[item.key] = value === "true";
+      } else if (item.key === "isActive") {
+        body[item.key] = value === "true";
       } else if (item.type === "json") {
         try { body[item.key] = JSON.parse(value) as unknown; }
         catch { setError(`إعدادات JSON غير صالحة في ${item.label}.`); return; }
@@ -1638,8 +1730,14 @@ function FormDialog({ form, endpointOverride, methodOverride, initialValues, ini
     setBusy(true);
     try {
       const method = methodOverride ?? (form.id === "carrierProfile" ? "PUT" : form.id === "profile" ? "PATCH" : "POST");
-      await apiRequest(endpoint, { method, body });
-      onSuccess(form.id === "quote" ? "تم إرسال العرض للمشتري." : form.id === "count" ? "بدأت جلسة الجرد." : "تم حفظ العملية في قاعدة البيانات.");
+      const saved = await apiRequest<{ status?: string; orderReference?: string | null }>(endpoint, { method, body });
+      onSuccess(form.id === "quote" && saved.status === "accepted"
+        ? `قُبل عرضك تلقائيًا ضمن حدود تفويض العميل وأنشئ أمر الشراء ${saved.orderReference ?? ""}.`
+        : form.id === "quote" ? "تم إرسال العرض للمشتري."
+          : form.id === "count" ? "بدأت جلسة الجرد."
+        : form.id === "managedService" ? "تم إرسال طلب الخدمة؛ سيظهر عرض السعر الشهري بعد مراجعة مالك المنصة."
+          : form.id === "managedRule" ? "تم حفظ حدود إعادة التوريد للصنف والمورد المحددين."
+            : "تم حفظ العملية في قاعدة البيانات.");
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "تعذر حفظ العملية.");
     } finally {
@@ -1652,7 +1750,9 @@ function FormDialog({ form, endpointOverride, methodOverride, initialValues, ini
     if (item.options) return item.options;
     return (options[item.key] ?? []).map((option) => ({
       value: String(option.id ?? ""),
-      label: String(option.displayName ?? option.name ?? option.reference ?? option.fullName ?? option.email ?? option.id ?? ""),
+      label: item.key === "inventoryProductId" && typeof option.sourceSupplierName === "string"
+        ? `${String(option.name ?? option.id)} — ${option.sourceSupplierName}`
+        : String(option.displayName ?? option.name ?? option.reference ?? option.fullName ?? option.email ?? option.id ?? ""),
     })).filter((option) => option.value);
   }
 

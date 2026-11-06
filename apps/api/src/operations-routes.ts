@@ -4,6 +4,7 @@ import { z } from "zod";
 import { authenticate, requireCompany, requireRole } from "./auth.js";
 import { audit, ensureCompanyActive, query, transaction } from "./db.js";
 import { ApiError, invariant } from "./errors.js";
+import { evaluateManagedInventory } from "./managed-inventory.js";
 import { parse, quantitySchema, textSchema, uuidSchema } from "./validation.js";
 
 const router = Router();
@@ -157,10 +158,14 @@ router.post("/inventory/warehouses", authenticate, requireCompany("customer"), r
 router.get("/inventory/products", authenticate, requireCompany("customer"), async (request, response) => {
   const barcode = typeof request.query.barcode === "string" ? request.query.barcode.trim().slice(0, 100) : "";
   const result = await query(
-    `SELECT id, source_product_id AS "sourceProductId", barcode, name, unit,
-            low_stock_threshold AS "lowStockThreshold", is_active AS "isActive", created_at AS "createdAt"
-     FROM inventory_products WHERE company_id = $1 AND is_active = true
-       AND ($2 = '' OR barcode = $2) ORDER BY name LIMIT 500`,
+    `SELECT ip.id, ip.source_product_id AS "sourceProductId", ip.barcode, ip.name, ip.unit,
+            supplier.display_name AS "sourceSupplierName",
+            ip.low_stock_threshold AS "lowStockThreshold", ip.is_active AS "isActive", ip.created_at AS "createdAt"
+     FROM inventory_products ip
+     LEFT JOIN products p ON p.id = ip.source_product_id
+     LEFT JOIN companies supplier ON supplier.id = p.supplier_company_id
+     WHERE ip.company_id = $1 AND ip.is_active = true
+       AND ($2 = '' OR ip.barcode = $2) ORDER BY ip.name LIMIT 500`,
     [request.context!.companyId, barcode],
   );
   response.json({ data: result.rows });
@@ -331,6 +336,9 @@ router.post("/inventory/movements", authenticate, requireCompany("customer"), re
         input.batchNumber ?? null, input.expiresOn ?? null, input.reference ?? null, input.notes ?? null, context.userId],
     );
     await audit(client, context.companyId, context.userId, `inventory.${input.movementType}`, "stock_movement", movement.rows[0].id);
+    if (input.inventoryProductId) {
+      await evaluateManagedInventory(client, context.companyId, input.warehouseId, context.userId, input.inventoryProductId);
+    }
     return movement.rows[0];
   });
   response.status(201).json(created);
@@ -386,6 +394,8 @@ router.post("/inventory/transfers", authenticate, requireCompany("customer"), re
           input.quantity, product.rows[0].unit, input.batchNumber ?? null, input.expiresOn ?? null, reference, input.notes ?? null, context.userId],
       );
     }
+    await evaluateManagedInventory(client, context.companyId, input.sourceWarehouseId, context.userId, input.inventoryProductId);
+    await evaluateManagedInventory(client, context.companyId, input.destinationWarehouseId, context.userId, input.inventoryProductId);
     await audit(client, context.companyId, context.userId, "inventory.transfer", "inventory_product", input.inventoryProductId, {
       sourceWarehouseId: input.sourceWarehouseId,
       destinationWarehouseId: input.destinationWarehouseId,
@@ -543,6 +553,7 @@ router.post("/inventory/counts/:id/complete", authenticate, requireCompany("cust
           item.batch_number, item.expires_on, `COUNT-${countId}`, "تسوية نتيجة الجرد الدوري", context.userId],
       );
     }
+    await evaluateManagedInventory(client, context.companyId, record.warehouse_id, context.userId);
     await client.query("UPDATE inventory_counts SET status = 'completed', completed_at = now() WHERE id = $1", [countId]);
     await audit(client, context.companyId, context.userId, "inventory.count.completed", "inventory_count", countId, { adjustments: items.rowCount });
     const total = await client.query<{ items: number; accurate: number }>(
