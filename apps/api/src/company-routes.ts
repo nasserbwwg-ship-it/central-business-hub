@@ -145,6 +145,60 @@ router.patch("/admin/companies/:id/status", authenticate, requireOperator, requi
   response.json({ id: companyId, status: result.status, displayName: result.display_name });
 });
 
+router.get("/admin/demo-data", authenticate, requireOperator, requireRole("owner"), async (_request, response) => {
+  const summary = await query<{ companyCount: number; productCount: number }>(
+    `SELECT count(DISTINCT c.id)::int AS "companyCount",
+            count(p.id)::int AS "productCount"
+     FROM companies c
+     LEFT JOIN products p ON p.supplier_company_id = c.id
+     WHERE c.metadata->>'demo' = 'true'`,
+  );
+  const counts = summary.rows[0]!;
+  response.json({
+    data: [{
+      id: "demo-catalog",
+      status: counts.companyCount > 0 || counts.productCount > 0 ? "loaded" : "empty",
+      companyCount: counts.companyCount,
+      productCount: counts.productCount,
+      description: "بيانات عرض تحمل علامة تجريبية ولا تؤثر على حسابات عملاء حقيقيين.",
+    }],
+  });
+});
+
+router.delete("/admin/demo-data", authenticate, requireOperator, requireRole("owner"), async (request, response) => {
+  const removed = await transaction(async (client) => {
+    const products = await client.query<{ count: number }>(
+      `WITH removed AS (
+         DELETE FROM products
+         WHERE supplier_company_id IN (
+           SELECT id FROM companies WHERE metadata->>'demo' = 'true'
+         )
+         RETURNING 1
+       ) SELECT count(*)::int AS count FROM removed`,
+    );
+    const companies = await client.query<{ count: number }>(
+      `WITH removed AS (
+         DELETE FROM companies WHERE metadata->>'demo' = 'true'
+         RETURNING 1
+       ) SELECT count(*)::int AS count FROM removed`,
+    );
+    await audit(
+      client,
+      request.context!.companyId,
+      request.context!.userId,
+      "platform.demo_data_removed",
+      "platform",
+      request.context!.companyId,
+      { products: products.rows[0]?.count ?? 0, companies: companies.rows[0]?.count ?? 0 },
+    );
+    return {
+      productCount: products.rows[0]?.count ?? 0,
+      companyCount: companies.rows[0]?.count ?? 0,
+    };
+  });
+  response.json({ ...removed, message: "تم حذف البيانات التجريبية، مع إبقاء بيانات العملاء والشركات الحقيقية." });
+});
+
 router.delete("/companies/me/members/:userId", authenticate, requireRole(...adminRoles), async (request, response) => {
   const userId = parse(uuidSchema, request.params.userId);
   invariant(userId !== request.context!.userId, 400, "لا يمكن إزالة عضويتك الحالية.", "CANNOT_REMOVE_SELF");

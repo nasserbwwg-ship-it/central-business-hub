@@ -157,6 +157,7 @@ const sources: Partial<Record<SectionId, DataSource[]>> = {
   analytics: [{ id: "dashboard", title: "المؤشرات المحاسبية والتشغيلية", endpoint: "/analytics/dashboard" }],
   integrations: [{ id: "integrations", title: "إعدادات الربط", endpoint: "/integrations", columns: ["name", "integrationType", "endpointUrl", "status", "configuration", "createdAt"] }],
   administration: [
+    { id: "demoData", title: "البيانات التجريبية", endpoint: "/admin/demo-data", columns: ["status", "companyCount", "productCount", "description"] },
     { id: "companies", title: "الشركات والاعتمادات", endpoint: "/admin/companies", columns: ["displayName", "legalName", "type", "status", "registrationNumber", "taxNumber", "contactEmail", "createdAt"] },
     { id: "managedServiceRequests", title: "طلبات إدارة المخزون والتوريد", endpoint: "/admin/managed-inventory", columns: ["customerName", "warehouseName", "warehouseCity", "status", "ruleCount", "scopeSummary", "autoReorder", "perOrderBudget", "monthlyBudget", "monthlyFee", "requestNotes", "quoteNotes", "createdAt"] },
     { id: "managedReplenishments", title: "مراقبة إعادة التوريد", endpoint: "/admin/managed-inventory/replenishments", columns: ["customerName", "warehouseName", "productName", "currentQuantity", "requestedQuantity", "status", "rfqReference", "orderReference", "authorizedAmount", "blockReason", "createdAt"] },
@@ -551,6 +552,15 @@ function MarketingLanding() {
           <div className="visual-node node-logistics"><span>ل</span><small>اللوجستيات</small></div>
           <div className="visual-caption">طلب · عرض · تنفيذ · تسليم</div>
         </div>
+      </section>
+      <section className="landing-proof" aria-label="إحصاءات المنظومة">
+        <div><strong>+٦٠٠</strong><span>شريك تجاري مستهدف</span></div>
+        <div><strong>٢٤/٧</strong><span>متابعة الطلبات والعمليات</span></div>
+        <div><strong>٩</strong><span>مجالات تشغيل متصلة</span></div>
+        <div><strong>١</strong><span>منظومة موحدة للشركات</span></div>
+      </section>
+      <section className="landing-trust-strip" aria-label="أقسام المنظومة">
+        <span>قطاع الصناعات الغذائية</span><i>•</i><span>المستهلكات الطبية</span><i>•</i><span>المواد الخام</span><i>•</i><span>الخدمات المهنية</span><i>•</i><span>النقل واللوجستيات</span>
       </section>
       <section className="portal-section platform-section" id="platforms">
         <div className="section-intro"><div><span className="portal-eyebrow">تسعة مجالات عمل</span><h2>بوابات مستقلة، منظومة واحدة</h2></div><p>ابدأ من التجربة المناسبة لك؛ الدخول والصلاحيات والبيانات التشغيلية تظل محكومة بمساحة شركتك.</p></div>
@@ -1298,6 +1308,13 @@ type RowAction = {
 function actionsFor(sourceId: string, row: DataRow, companyType: CompanyType): RowAction[] {
   const id = String(row.id ?? "");
   const status = String(row.status ?? "");
+  if (sourceId === "demoData" && companyType === "operator" && status !== "empty") return [{
+    label: "حذف البيانات التجريبية نهائيًا",
+    endpoint: () => "/admin/demo-data",
+    method: "DELETE",
+    confirm: "حذف جميع الموردين والمنتجات التجريبية؟ لن تُحذف بيانات الشركات الحقيقية.",
+    successMessage: "تم حذف البيانات التجريبية.",
+  }];
   if (sourceId === "managedRules" && companyType === "customer") return [{
     label: "تعديل تفويض الصنف",
     kind: "form",
