@@ -84,7 +84,7 @@ npm run dev:web
 1. مصدر المشروع موجود في المستودع الخاص [central-business-hub](https://github.com/nasserbwwg-ship-it/central-business-hub) على الفرع `main`، وملف `apps/api/.env` وبيانات الاعتماد المحلية مستثناة من Git.
 2. في Render، أنشئ Blueprint من المستودع والفرع `main` باستخدام `render.yaml`، واختر الخطط المجانية للخدمة وقاعدة البيانات إن ظهرت شاشة اختيار الخطط.
 3. انتظر اكتمال نشر الخدمة وترحيلات قاعدة البيانات. النسخة المنشورة حاليًا: [central-business-hub.onrender.com](https://central-business-hub.onrender.com). صحة الخدمة وقاعدة البيانات: [`/api/health`](https://central-business-hub.onrender.com/api/health).
-4. لوحة المالك الخاصة متاحة على [`/owner`](https://central-business-hub.onrender.com/owner)؛ تتطلب تسجيل الدخول بحساب مالك المنصة الذي أنشأه `npm run db:seed-admin --workspace @central-hub/api`. **لم يُنشأ حساب المالك على قاعدة Render بعد.** لا يمنح التسجيل العام صلاحية الإدارة، ولا تضع كلمة مرور المالك في المستودع أو المحادثة. يجب تهيئة الحساب من بيئة موثوقة تتصل بقاعدة البيانات قبل استخدام شاشة الاعتماد.
+4. لوحة المالك الخاصة متاحة على [`/owner`](https://central-business-hub.onrender.com/owner)، ولا يمنح التسجيل العام صلاحية الإدارة. لتهيئة المالك على Render المجاني، أضف مؤقتًا متغيرات `OWNER_BOOTSTRAP_EMAIL` و`OWNER_BOOTSTRAP_PASSWORD` و`OWNER_BOOTSTRAP_NAME` في إعدادات الخدمة، ثم انتظر إعادة النشر وظهور سجل `Platform owner created` أو `Platform owner password reset`. تستهلك قاعدة البيانات هذه العملية مرة واحدة فقط، وتلغي جلسات الحساب السابقة. احذف المتغيرات الثلاثة من Render بعد نجاحها؛ لا تضع كلمة المرور في المستودع أو ملف Blueprint.
 
 تُخدم الواجهة وواجهة API من النطاق نفسه؛ تتضمن مسارات الواجهة `/`, `/companies`, `/supply`, و`/services`. للتحقق اليدوي من التشغيل افتح الرابط بعد الاستيقاظ من السبات وانتظر استجابة التطبيق.
 
